@@ -1,0 +1,136 @@
+class Program
+    {
+        static void Main(string[] args)
+        {
+            DepartmentCollection collection = new DepartmentCollection();
+            collection.Add(new Department() {ID = 1, Name = "Foo" });
+            collection.Add(new Department() { ID = 2, Name = "Bar" });
+            collection.Add(new Department() { ID = 3, Name = "Baz" });
+            collection.Add(new Department() { ID = 4, Name = "Bizz" });
+
+            foreach (var d in collection)
+            {
+                Console.WriteLine(d.ToString());
+            }
+            Console.WriteLine();
+            Console.WriteLine();
+
+            foreach (var d in collection.GetEvenDepartments())
+            {
+                Console.WriteLine(d.ToString());
+            }
+
+
+            Console.ReadKey();
+        }
+    }
+public class Department 
+    {
+        public int ID { get; set; }
+        public string Name { get; set; }
+
+        public override string ToString()
+        {
+            return "ID->" + ID +",Name->" + Name;
+        }
+    }
+
+    public class DepartmentEnumerator : IEnumerator<Department>
+    {
+        private List<Department> _collection;
+        private int curIndex;
+        private Department curBox;
+        public DepartmentEnumerator(List<Department> collection)
+        {
+            _collection = collection;
+            curIndex = -1;
+            curBox = default(Department);
+        }
+
+        public bool MoveNext()
+        {
+            if (_collection.Count<Department>() == 0) return false;
+
+            //Avoids going beyond the end of the collection.
+            if (++curIndex >= _collection.Count<Department>())
+            {
+                return false;
+            }
+            else
+            {
+                // Set current box to next item in collection.
+                curBox = _collection[curIndex];
+            }
+            return true;
+        }
+
+        public void Reset() {
+            curIndex = -1;
+        }
+
+        void IDisposable.Dispose() { }
+
+        public Department Current
+        {
+            get { return curBox; }
+        }
+
+
+        object IEnumerator.Current
+        {
+            get { return Current; }
+        }
+    }
+
+    public class DepartmentCollection : IEnumerable<Department>
+    {
+        public int Size { get; set; }
+        private int _defaultSize = 100;
+        private List<Department> departments = null;
+        public DepartmentCollection()
+        {
+            this.Size = _defaultSize;
+            this.departments = new List<Department>(this.Size);
+        }
+        public DepartmentCollection(int size)
+        {
+            this.Size = size;
+            this.departments = new List<Department>(this.Size);
+        }
+
+        public Department this[int index]
+        {
+            get
+            {
+                return departments[index];
+            }
+        }
+
+
+        public void Add(Department d)
+        {
+            this.departments.Add(d);
+        }
+
+        public IEnumerator<Department> GetEnumerator()
+        {
+            // return departments.GetEnumerator();
+            return new DepartmentEnumerator(this.departments);
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
+        }
+
+        public IEnumerable<Department> GetEvenDepartments()
+        {
+            foreach (var item in departments)
+            {
+                if(item.ID % 2== 0)
+                {
+                    yield return item;
+                }
+            }
+        }
+    }
